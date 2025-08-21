@@ -20,10 +20,10 @@
         static LogLevelFactory() {
             LogLevels = new string[Enum.GetNames(typeof(LogLevel)).Length];
 
-            LogLevels[(int)LogLevel.DEBUG] = string.Intern("DEBUG");
+            LogLevels[(int)LogLevel.DEBUG] = string.Intern("DEBG");
             LogLevels[(int)LogLevel.INFO] = string.Intern("INFO");
             LogLevels[(int)LogLevel.WARN] = string.Intern("WARN");
-            LogLevels[(int)LogLevel.ERROR] = string.Intern("ERROR");
+            LogLevels[(int)LogLevel.ERROR] = string.Intern("ERRR");
         }
 
         internal static string GetString(LogLevel level) => LogLevels[(int)level];

@@ -4,13 +4,6 @@
         void Log(LogLevel level, string message);
     }
 
-    internal abstract class LoggerBase {
-        protected string _logFileName;
-        internal LoggerBase(string logFileName) {
-            _logFileName = logFileName;
-        }
-    }
-
     internal record class LogEntry(LogLevel level, DateTime timeStamp, string message) {
         internal string Level = LogLevelFactory.GetString(level);
         internal DateTime TimeStamp = timeStamp;

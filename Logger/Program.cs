@@ -6,7 +6,7 @@ internal class Program {
         AppConfig config = ConfigurationManager.GetAppConfig();
         Application application = new(config);
         application.Start();
-        Thread.Sleep(500);
+        Thread.Sleep(2000);
         application.Stop();
     }
 }
@@ -16,7 +16,7 @@ internal class Application {
     private readonly List<IService> _services;
 
     internal Application(AppConfig config) {
-        _appLogger = new LoggerSimple(config.AppLogFileName);
+        _appLogger = new LoggerSimple(new SimpleFileWriter(config.AppLogFileName));
         _services = [
             new HighLoadService(_appLogger),
             new LoadService(_appLogger),

@@ -5,8 +5,10 @@ namespace Logger.Logger {
         private readonly IFileWriter _fileWriter = fileWriter;
 
         public void Log(LogLevel level, string message) {
-            string logMessage = string.Concat(LogLevelFactory.GetString(level), "   ", DateTime.Now, "   ", message);
-            _fileWriter.AppendLine(logMessage);
+            string logLevel = LogLevelFactory.GetString(level);
+            string date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            string logMessage = string.Concat(logLevel, "   ", date, "   ", message, Environment.NewLine);
+            _fileWriter.AppendText(logMessage);
         }
     }
 }

@@ -7,7 +7,7 @@ internal class Application {
     private readonly List<IService> _services;
 
     internal Application(AppConfig config) {
-        _appLogger = new LoggerSimple(new SimpleFileWriter(config.AppLogFileName));
+        _appLogger = new LoggerSimple(new SimpleFileWriter(config.AppLogFileName, config.MaxNumberOfRetriesToWriteToFile));
         _services = [
             new HighLoadService(_appLogger),
             new LoadService(_appLogger),
@@ -24,12 +24,10 @@ internal class Application {
         RunTasks(_services.Select<IService, Action>(s => s.Start));
     }
 
-    internal void Stop() {
+    internal void Shutdown() {
         RunTasks(_services.Select<IService, Action>(s => s.Stop));
     }
 }
-
-
 
 //internal class Producer {
 //    private readonly BlockingCollection<LogEntry> _queue;

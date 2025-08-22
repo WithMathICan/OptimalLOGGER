@@ -6,7 +6,7 @@ internal class Program {
         Application application = new(config);
         application.Start();
         Thread.Sleep(500);
-        application.Stop();
+        application.Shutdown();
     }
 }
 

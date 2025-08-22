@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 
 namespace Logger.Utils {
-    internal record class AppConfig(int QueueCapacity, string AppLogFileName);
+    internal record class AppConfig(int QueueCapacity, string AppLogFileName, int MaxNumberOfRetriesToWriteToFile);
 
     internal static class ConfigurationManager {
         internal static AppConfig GetAppConfig() {
@@ -12,8 +12,9 @@ namespace Logger.Utils {
                 .Build();
 
             int queueCapacity = configuration.GetValue<int>("LoggingSettings:QueueCapacity");
+            int retriesNumber = configuration.GetValue<int>("LoggingSettings:MaxNumberOfRetriesToWriteToFile");
             string appLogFileName = configuration.GetValue<string>("LoggingSettings:AppLogFileName") ?? "app.log";
-            return new AppConfig(queueCapacity, appLogFileName);
+            return new AppConfig(queueCapacity, appLogFileName, retriesNumber);
         }
     }
 }

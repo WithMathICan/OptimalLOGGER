@@ -9,8 +9,8 @@
             LogLevels = new string[Enum.GetNames(typeof(LogLevel)).Length];
 
             LogLevels[(int)LogLevel.DEBUG] = string.Intern("DEBG");
-            LogLevels[(int)LogLevel.INFO] = string.Intern("INFO");
-            LogLevels[(int)LogLevel.WARN] = string.Intern("WARN");
+            LogLevels[(int)LogLevel.INFO]  = string.Intern("INFO");
+            LogLevels[(int)LogLevel.WARN]  = string.Intern("WARN");
             LogLevels[(int)LogLevel.ERROR] = string.Intern("ERRR");
         }
 

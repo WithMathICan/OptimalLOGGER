@@ -1,7 +1,13 @@
 ﻿using Logger.Logger;
 
 namespace Logger.Utils {
-    internal abstract class FileWriterBase : IDisposable {
+
+    internal interface IFileWriter : IDisposable {
+        void AppendText(string text);
+        Task AppendTextWithRetryAsync(string text);
+    }
+
+    internal abstract class FileWriterBase : IFileWriter {
         protected string _filePath;
         protected Mutex _mutex;
         protected readonly string _reserveFilePath;
@@ -32,18 +38,17 @@ namespace Logger.Utils {
             }
         }
 
+        public abstract void AppendText(string text);
+
+        public abstract Task AppendTextWithRetryAsync(string text);
+
         public virtual void Dispose() {
             _mutex?.Dispose();
         }
     }
 
-    internal interface IFileWriter {
-        void AppendText(string text);
-        Task AppendTextWithRetryAsync(string text);
-    }
-
-    internal class SimpleFileWriter(string logFileName, int maxRetries) : FileWriterBase(logFileName, maxRetries), IFileWriter {
-        public void AppendText(string text) {
+    internal class SimpleFileWriter(string logFileName, int maxRetries) : FileWriterBase(logFileName, maxRetries) {
+        public override void AppendText(string text) {
             Console.WriteLine(text);
             _mutex.WaitOne();
             try {
@@ -57,7 +62,7 @@ namespace Logger.Utils {
             } finally { _mutex.ReleaseMutex(); }
         }
 
-        public async Task AppendTextWithRetryAsync(string text) {
+        public override async Task AppendTextWithRetryAsync(string text) {
             if (string.IsNullOrWhiteSpace(text)) throw new ArgumentException("Empty text should not be added.", nameof(text));
             using var mutexLock = new MutexLock(_mutex, TimeSpan.FromSeconds(5));
             if (!mutexLock.IsAcquired) {

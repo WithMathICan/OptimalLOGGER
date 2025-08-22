@@ -5,9 +5,10 @@ using Logger.Utils;
 internal class Application {
     private readonly IAppLogger _appLogger;
     private readonly List<IService> _services;
-
+    private readonly SimpleFileWriter _appLogWriter;
     internal Application(AppConfig config) {
-        _appLogger = new LoggerSimple(new SimpleFileWriter(config.AppLogFileName, config.MaxNumberOfRetriesToWriteToFile));
+        _appLogWriter = new SimpleFileWriter(config.AppLogFileName, config.MaxNumberOfRetriesToWriteToFile);
+        _appLogger = new LoggerSimple(_appLogWriter);
         _services = [
             new HighLoadService(_appLogger),
             new LoadService(_appLogger),
@@ -26,6 +27,7 @@ internal class Application {
 
     internal void Shutdown() {
         RunTasks(_services.Select<IService, Action>(s => s.Stop));
+        _appLogWriter.Dispose();
     }
 }
 

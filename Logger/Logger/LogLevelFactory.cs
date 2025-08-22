@@ -1,19 +1,7 @@
-﻿namespace Logger {
-
-    internal interface IAppLogger {
-        void Log(LogLevel level, string message);
-    }
-
-    internal record class LogEntry(LogLevel level, DateTime timeStamp, string message) {
-        internal string Level = LogLevelFactory.GetString(level);
-        internal DateTime TimeStamp = timeStamp;
-        internal string Message = message;
-    }
-
+﻿namespace Logger.Logger {
     internal enum LogLevel {
         DEBUG, INFO, WARN, ERROR
     }
-
     internal static class LogLevelFactory {
         private static readonly string[] LogLevels;
 

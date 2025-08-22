@@ -1,6 +1,8 @@
-﻿namespace Logger {
+﻿using Logger.Utils;
+
+namespace Logger.Logger {
     internal class LoggerSimple(IFileWriter fileWriter) : IAppLogger {
-        private IFileWriter _fileWriter = fileWriter;
+        private readonly IFileWriter _fileWriter = fileWriter;
 
         public void Log(LogLevel level, string message) {
             string logMessage = string.Concat(LogLevelFactory.GetString(level), "   ", DateTime.Now, "   ", message);

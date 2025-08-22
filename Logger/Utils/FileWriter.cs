@@ -1,4 +1,4 @@
-﻿namespace Logger {
+﻿namespace Logger.Utils {
     internal abstract class FileWriterBase {
         protected string _logFileName;
         protected Mutex _fileMutex;

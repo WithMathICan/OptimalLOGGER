@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-namespace Logger {
+namespace Logger.Utils {
     internal record class AppConfig(int QueueCapacity, string AppLogFileName);
 
     internal static class ConfigurationManager {

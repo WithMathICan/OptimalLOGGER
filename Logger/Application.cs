@@ -1,12 +1,31 @@
-﻿using Logger.Utils;
+﻿using Logger.Logger;
+using Logger.Services;
+using Logger.Utils;
 
-internal class Program {
-    private static void Main(string[] args) {
-        AppConfig config = ConfigurationManager.GetAppConfig();
-        Application application = new(config);
-        application.Start();
-        Thread.Sleep(500);
-        application.Stop();
+internal class Application {
+    private readonly IAppLogger _appLogger;
+    private readonly List<IService> _services;
+
+    internal Application(AppConfig config) {
+        _appLogger = new LoggerSimple(new SimpleFileWriter(config.AppLogFileName));
+        _services = [
+            new HighLoadService(_appLogger),
+            new LoadService(_appLogger),
+            new LoadServiceWithError(_appLogger),
+        ];
+    }
+
+    private static void RunTasks(IEnumerable<Action> actions) {
+        var tasks = actions.Select(a => Task.Run(a));
+        Task.WaitAll([.. tasks]);
+    }
+
+    internal void Start() {
+        RunTasks(_services.Select<IService, Action>(s => s.Start));
+    }
+
+    internal void Stop() {
+        RunTasks(_services.Select<IService, Action>(s => s.Stop));
     }
 }
 

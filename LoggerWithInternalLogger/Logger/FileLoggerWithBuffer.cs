@@ -76,8 +76,8 @@ namespace LoggerWithInternalLogger.Logger {
             _worker.Join();
             Flush();
 
-            _mutex?.Dispose();
             _internalLogger?.Dispose();
+            _mutex?.Dispose();
         }
     }
 }

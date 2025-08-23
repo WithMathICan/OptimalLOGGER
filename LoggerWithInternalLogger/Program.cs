@@ -16,7 +16,7 @@ namespace LoggerWithInternalLogger {
     }
 
     internal class HighLoadService : IService {
-        ILogger _logger;
+        private readonly ILogger _logger;
         public HighLoadService(ILogger logger) {
             _logger = logger;
             _logger.Log(LogLevel.DEBUG, "HighLoadService initialized");
@@ -32,7 +32,7 @@ namespace LoggerWithInternalLogger {
     }
 
     internal class LoadService : IService {
-        ILogger _logger;
+        private readonly ILogger _logger;
         public LoadService(ILogger logger) {
             _logger = logger;
             _logger.Log(LogLevel.DEBUG, "LoadService initialized");
@@ -48,7 +48,7 @@ namespace LoggerWithInternalLogger {
     }
 
     internal class LoadServiceWithError : IService {
-        ILogger _logger;
+        private readonly ILogger _logger;
         public LoadServiceWithError(ILogger logger) {
             _logger = logger;
             _logger.Log(LogLevel.DEBUG, "LoadServiceWithError initialized");
@@ -66,15 +66,16 @@ namespace LoggerWithInternalLogger {
     internal class Application {
         private readonly List<IService> _services;
         private readonly ILogger _appLogger;
-        private readonly ILogger _reserveLogger;
+        private readonly ConsoleLogger _internalLogger;
         private static void RunTasks(IEnumerable<Action> actions) {
             var tasks = actions.Select(a => Task.Run(a));
             Task.WaitAll([.. tasks]);
         }
 
         public Application() {
-            _reserveLogger = new ConsoleLogger();
-            _appLogger = new FileLogger("app.log", _reserveLogger);
+            _internalLogger = new ConsoleLogger();
+            _appLogger = new FileLogger("app.log", _internalLogger);
+            //_appLogger = new ConsoleLogger();
             _services = [
                 new HighLoadService(_appLogger),
                 new LoadService(_appLogger),
@@ -88,7 +89,7 @@ namespace LoggerWithInternalLogger {
 
         internal void Shutdown() {
             RunTasks(_services.Select<IService, Action>(s => s.Stop));
-            _reserveLogger.Dispose();
+            _internalLogger.Dispose();
             _appLogger.Dispose();
         }
     }

@@ -3,7 +3,7 @@
         private string FormatMessage(LogLevel level, string message) {
             string logLevel = LogLevelFactory.GetString(level);
             string date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-            return string.Concat(logLevel, "   ", date, "   ", message, Environment.NewLine);
+            return string.Concat(logLevel, "   ", date, "   ", message);
         }
 
         public void Log(LogLevel level, string message) {

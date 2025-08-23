@@ -3,9 +3,14 @@ using System.Text;
 using System.Threading;
 
 namespace LoggerWithInternalLogger.Utils {
-    internal class FileWriter : FileWriterBase {
-        public FileWriter(string filePath) : base(filePath) {}
+    internal class FileWriter(string filePath) : FileWriterBase(filePath) {
 
+        /// <summary>
+        /// Writes the contents of the provided <see cref="StringBuilder"/> to the file in a thread-safe manner.
+        /// Acquires a mutex before writing to ensure exclusive access.
+        /// Logs an error if the mutex cannot be acquired or if an exception occurs during writing.
+        /// </summary>
+        /// <param name="sb">The <see cref="StringBuilder"/> containing the text to write to the file.</param>
         public override void Write(StringBuilder sb) {
             using var mutexLock = new MutexLock(_mutex, TimeSpan.FromSeconds(5));
             if (!mutexLock.IsAcquired) {
@@ -21,6 +26,12 @@ namespace LoggerWithInternalLogger.Utils {
             }
         }
 
+        /// <summary>
+        /// Appends a line of text to the file in a thread-safe manner.
+        /// Acquires a mutex before writing to ensure exclusive access.
+        /// Logs an error if the mutex cannot be acquired or if an exception occurs during writing.
+        /// </summary>
+        /// <param name="text">The text to append as a new line to the file.</param>
         public override void AppendLine(string text) {
             using var mutexLock = new MutexLock(_mutex, TimeSpan.FromSeconds(5));
             if (!mutexLock.IsAcquired) {

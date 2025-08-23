@@ -13,6 +13,7 @@ namespace LoggerWithInternalLogger.Logger {
         private readonly Thread _worker;
         private readonly ConcurrentQueue<string> _queue = new();
         private readonly CancellationTokenSource _cts = new();
+        private static readonly ThreadLocal<StringBuilder> _stringBuilder = new(() => new StringBuilder(256));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FileLoggerWithBuffer"/> class.
@@ -42,7 +43,8 @@ namespace LoggerWithInternalLogger.Logger {
         /// </summary>
         private void Flush() {
             if (_queue.IsEmpty) return;
-            var sb = new StringBuilder();
+            var sb = _stringBuilder.Value ?? new StringBuilder(256);
+            sb.Clear();
             int count = 0;
             while (_queue.TryDequeue(out var log)) {
                 sb.AppendLine(log);

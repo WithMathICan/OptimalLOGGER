@@ -13,7 +13,7 @@ namespace LoggerWithInternalLogger.Logger {
         private readonly Thread _worker;
         private readonly ConcurrentQueue<string> _queue = new();
         private readonly CancellationTokenSource _cts = new();
-        private static readonly ThreadLocal<StringBuilder> _stringBuilder = new(() => new StringBuilder(256));
+        private static readonly ThreadLocal<StringBuilder> _stringBuilder = new(() => new StringBuilder(256), trackAllValues: false);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FileLoggerWithBuffer"/> class.

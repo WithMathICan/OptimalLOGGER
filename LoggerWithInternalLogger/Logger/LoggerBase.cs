@@ -1,4 +1,6 @@
-﻿namespace LoggerWithInternalLogger.Logger {
+﻿using System.Globalization;
+
+namespace LoggerWithInternalLogger.Logger {
     /// <summary>
     /// Provides a base implementation for loggers, including message formatting and disposal.
     /// </summary>
@@ -23,7 +25,7 @@
         /// <returns>A formatted log message string.</returns>
         protected virtual string FormatMessage(LogLevel level, string message) {
             string logLevel = LogLevelFactory.GetString(level);
-            string date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            string date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
             return string.Concat(logLevel, "   ", date, "   ", message);
         }
     }

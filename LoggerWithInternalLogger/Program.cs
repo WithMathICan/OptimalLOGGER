@@ -1,4 +1,5 @@
 ﻿using LoggerWithInternalLogger.Logger;
+using LoggerWithInternalLogger.Utils;
 
 namespace LoggerWithInternalLogger {
     internal class Program {
@@ -21,11 +22,9 @@ namespace LoggerWithInternalLogger {
             _logger = logger;
             _logger.Log(LogLevel.DEBUG, "HighLoadService initialized");
         }
-
         public void Start() {
             _logger.Log(LogLevel.INFO, "HighLoadService started");
         }
-
         public void Stop() {
             _logger.Log(LogLevel.WARN, "HighLoadService stoped");
         }
@@ -37,11 +36,9 @@ namespace LoggerWithInternalLogger {
             _logger = logger;
             _logger.Log(LogLevel.DEBUG, "LoadService initialized");
         }
-
         public void Start() {
             _logger.Log(LogLevel.INFO, "LoadService started");
         }
-
         public void Stop() {
             _logger.Log(LogLevel.WARN, "LoadService stoped");
         }
@@ -53,11 +50,9 @@ namespace LoggerWithInternalLogger {
             _logger = logger;
             _logger.Log(LogLevel.DEBUG, "LoadServiceWithError initialized");
         }
-
         public void Start() {
             _logger.Log(LogLevel.ERROR, "Error during LoadServiceWithError starting");
         }
-
         public void Stop() {
             _logger.Log(LogLevel.WARN, "LoadServiceWithError stoped");
         }
@@ -66,16 +61,25 @@ namespace LoggerWithInternalLogger {
     internal class Application {
         private readonly List<IService> _services;
         private readonly ILogger _appLogger;
-        private readonly ConsoleLogger _internalLogger;
+        private static readonly FileWriterFactory _fileWriterFactory;
+        private static readonly ConsoleLogger _internalLogger = new();
+
+        internal static void Log(LogLevel level, string text) {
+            _internalLogger.Log(level, text);
+        }
+
         private static void RunTasks(IEnumerable<Action> actions) {
             var tasks = actions.Select(a => Task.Run(a));
             Task.WaitAll([.. tasks]);
         }
 
+        static Application() {
+            _fileWriterFactory = new FileWriterFactory();
+            AppDomain.CurrentDomain.ProcessExit += (sender, args) => _fileWriterFactory.Dispose();
+        }
+
         public Application() {
-            _internalLogger = new ConsoleLogger();
-            _appLogger = new FileLogger("app.log", _internalLogger);
-            //_appLogger = new ConsoleLogger();
+            _appLogger = new FileLoggerWithBuffer(5, _fileWriterFactory.GetWriter("app.log"));
             _services = [
                 new HighLoadService(_appLogger),
                 new LoadService(_appLogger),
@@ -89,8 +93,9 @@ namespace LoggerWithInternalLogger {
 
         internal void Shutdown() {
             RunTasks(_services.Select<IService, Action>(s => s.Stop));
-            _internalLogger.Dispose();
             _appLogger.Dispose();
+            _fileWriterFactory.Dispose();
+            _internalLogger.Dispose();
         }
     }
 }

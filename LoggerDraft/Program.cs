@@ -1,6 +1,13 @@
 ﻿using Logger.Utils;
 
+/// <summary>
+/// Program entry point class
+/// </summary>
 internal class Program {
+    /// <summary>
+    /// Application entry point
+    /// </summary>
+    /// <param name="args">Command line arguments</param>
     private static void Main(string[] args) {
         AppConfig config = ConfigurationManager.GetAppConfig();
         Application application = new(config);
@@ -42,7 +49,7 @@ internal class Program {
 //    private readonly BlockingCollection<LogEntry> _logQueue;
 //    private readonly ConcurrentQueue<LogEntry> _queue;
 //    //private Mutex logFileMutex = new Mutex(false, "Global\\ApplicationLog");
-//    //private readonly object _queueLock = new object();
+//    //private readonly object _queueLock = new object;
 //    private readonly SemaphoreSlim _slim;
 
 //    public LogQueueWrapper(int capacity) {

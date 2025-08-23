@@ -2,10 +2,18 @@
 using Logger.Services;
 using Logger.Utils;
 
+/// <summary>
+/// Main application class coordinating services and logging
+/// </summary>
 internal class Application {
     private readonly IAppLogger _appLogger;
     private readonly List<IService> _services;
     private readonly SimpleFileWriter _appLogWriter;
+
+    /// <summary>
+    /// Initializes a new instance of the application
+    /// </summary>
+    /// <param name="config">Application configuration settings</param>
     internal Application(AppConfig config) {
         _appLogWriter = new SimpleFileWriter(config.AppLogFileName, config.MaxNumberOfRetriesToWriteToFile);
         _appLogger = new LoggerSimple(_appLogWriter);
@@ -16,15 +24,25 @@ internal class Application {
         ];
     }
 
+    /// <summary>
+    /// Executes a collection of actions in parallel
+    /// </summary>
+    /// <param name="actions">Collection of actions to run</param>
     private static void RunTasks(IEnumerable<Action> actions) {
         var tasks = actions.Select(a => Task.Run(a));
         Task.WaitAll([.. tasks]);
     }
 
+    /// <summary>
+    /// Starts all services in parallel
+    /// </summary>
     internal void Start() {
         RunTasks(_services.Select<IService, Action>(s => s.Start));
     }
 
+    /// <summary>
+    /// Shuts down all services and disposes resources
+    /// </summary>
     internal void Shutdown() {
         RunTasks(_services.Select<IService, Action>(s => s.Stop));
         _appLogWriter.Dispose();
@@ -61,7 +79,7 @@ internal class Application {
 //    private readonly BlockingCollection<LogEntry> _logQueue;
 //    private readonly ConcurrentQueue<LogEntry> _queue;
 //    //private Mutex logFileMutex = new Mutex(false, "Global\\ApplicationLog");
-//    //private readonly object _queueLock = new object();
+//    //private readonly object _queueLock = new object;
 //    private readonly SemaphoreSlim _slim;
 
 //    public LogQueueWrapper(int capacity) {
@@ -85,4 +103,4 @@ internal class Application {
 //    }
 
 
-//}
+

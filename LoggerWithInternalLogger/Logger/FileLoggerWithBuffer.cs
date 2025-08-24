@@ -34,14 +34,14 @@ namespace LoggerWithInternalLogger.Logger {
         private void WorkerLoop() {
             while (!_cts.IsCancellationRequested) {
                 _signal.WaitOne(TimeSpan.FromSeconds(5));
-                while (_queue.Count > _batchSize) Flush();
+                while (_queue.Count > _batchSize) Flush(isOneBatch: true);
             }
         }
 
         /// <summary>
         /// Flushes a batch of log messages from the queue to the file.
         /// </summary>
-        private void Flush() {
+        private void Flush(bool isOneBatch) {
             if (_queue.IsEmpty) return;
             var sb = _stringBuilder.Value ?? new StringBuilder(256);
             sb.Clear();
@@ -49,7 +49,7 @@ namespace LoggerWithInternalLogger.Logger {
             while (_queue.TryDequeue(out var logEntry)) {
                 AppendFormattedLineToStringBuilder(logEntry, sb);
                 count++;
-                if (count >= _batchSize) break;
+                if (count >= _batchSize && isOneBatch) break;
             }
             if (count != 0) _fileWriter.Write(sb);
         }
@@ -68,10 +68,19 @@ namespace LoggerWithInternalLogger.Logger {
         /// Disposes the logger, ensuring all buffered messages are written to file.
         /// </summary>
         public override void Dispose() {
-            _cts.Cancel();
-            _signal.Set();
-            _worker.Join();
-            Flush();
+            if (_disposed) return;
+            try {
+                _cts.Cancel();
+                _signal.Set();
+                if (!_worker.Join(TimeSpan.FromSeconds(10))) {
+                    _worker.Interrupt();
+                }
+                Flush(isOneBatch: false);
+            } finally {
+                _signal?.Dispose();
+                _cts?.Dispose();
+                _disposed = true;
+            }
         }
     }
 }

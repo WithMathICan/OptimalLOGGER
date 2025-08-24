@@ -6,6 +6,7 @@ namespace LoggerWithInternalLogger.Logger {
     /// Provides a base implementation for loggers, including message formatting and disposal.
     /// </summary>
     internal abstract class LoggerBase : ILogger {
+        protected bool _disposed = false;
         /// <summary>
         /// Logs a message with the specified log level.
         /// </summary>

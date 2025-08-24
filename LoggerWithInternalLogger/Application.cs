@@ -5,12 +5,12 @@ using LoggerWithInternalLogger.Utils;
 namespace LoggerWithInternalLogger {
     internal class Application {
         private readonly List<IService> _services;
-        private readonly ILogger _appLogger;
+        private static readonly ILogger _appLogger;
         private static readonly FileWriterFactory _fileWriterFactory;
-        private static readonly ConsoleLogger _internalLogger = new();
+        private static readonly ConsoleLogger _internalLogger;
 
         internal static void Log(LogLevel level, string text) {
-            _internalLogger.Log(level, text);
+            _appLogger.Log(level, text);
         }
 
         private static void RunTasks(IEnumerable<Action> actions) {
@@ -19,16 +19,20 @@ namespace LoggerWithInternalLogger {
         }
 
         static Application() {
-            _fileWriterFactory = new FileWriterFactory();
+            _internalLogger = new();
+            _fileWriterFactory = new FileWriterFactory(_internalLogger);
+            _appLogger = new FileLoggerWithBuffer(5, _fileWriterFactory.GetWriter("app.log"));
+            AppDomain.CurrentDomain.ProcessExit += (sender, args) => _appLogger.Dispose();
             AppDomain.CurrentDomain.ProcessExit += (sender, args) => _fileWriterFactory.Dispose();
+            AppDomain.CurrentDomain.ProcessExit += (sender, args) => _internalLogger.Dispose();
         }
 
         public Application() {
-            _appLogger = new FileLoggerWithBuffer(5, _fileWriterFactory.GetWriter("app.log"));
+            
             _services = [
-                new HighLoadService(_appLogger),
-                new LoadService(_appLogger),
-                new LoadServiceWithError(_appLogger),
+                new HighLoadService(),
+                new LoadService(),
+                new LoadServiceWithError(),
             ];
         }
 
@@ -38,9 +42,6 @@ namespace LoggerWithInternalLogger {
 
         internal void Shutdown() {
             RunTasks(_services.Select<IService, Action>(s => s.Stop));
-            _appLogger.Dispose();
-            _fileWriterFactory.Dispose();
-            _internalLogger.Dispose();
         }
     }
 }

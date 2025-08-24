@@ -1,12 +1,14 @@
-﻿using System.Collections.Concurrent;
+﻿using LoggerWithInternalLogger.Logger;
+using System.Collections.Concurrent;
 
 namespace LoggerWithInternalLogger.Utils {
     /// <summary>
     /// Provides a factory for creating and managing <see cref="IFileWriter"/> instances for different file paths.
     /// Ensures that only one writer exists per normalized file path.
     /// </summary>
-    internal class FileWriterFactory : IFileWriterFactory {
+    internal class FileWriterFactory(ILogger internalLogger) : IFileWriterFactory {
         private readonly ConcurrentDictionary<string, FileWriter> _writers = new();
+        private readonly ILogger _internalLogger = internalLogger;
         private bool _disposed;
 
         /// <summary>
@@ -22,7 +24,7 @@ namespace LoggerWithInternalLogger.Utils {
             ArgumentException.ThrowIfNullOrWhiteSpace(filePath, nameof(filePath));
             // Normalize path to avoid duplicates (e.g., "log.txt" vs "./log.txt")
             string normalizedPath = Path.GetFullPath(filePath);
-            return _writers.GetOrAdd(normalizedPath, _ => new FileWriter(normalizedPath));
+            return _writers.GetOrAdd(normalizedPath, _ => new FileWriter(normalizedPath, _internalLogger));
         }
 
         /// <summary>

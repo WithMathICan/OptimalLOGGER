@@ -6,6 +6,7 @@ namespace LoggerWithInternalLogger.Utils {
     /// </summary>
     internal class MutexLock : IDisposable {
         private readonly Mutex _mutex;
+        private readonly ILogger _internalLogger;
         private bool _acquired;
         private bool _disposed;
 
@@ -20,13 +21,14 @@ namespace LoggerWithInternalLogger.Utils {
         /// <param name="mutex">The <see cref="Mutex"/> to acquire.</param>
         /// <param name="timeout">The maximum amount of time to wait for the mutex.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="mutex"/> is null.</exception>
-        public MutexLock(Mutex mutex, TimeSpan timeout) {
+        public MutexLock(Mutex mutex, TimeSpan timeout, ILogger internalLogger) {
             ArgumentNullException.ThrowIfNull(mutex);
+            _internalLogger = internalLogger;
             _mutex = mutex;
             try {
                 _acquired = _mutex.WaitOne(timeout);
             } catch (AbandonedMutexException ex) {
-                Application.Log(LogLevel.ERROR, $"Mutex was abandoned: {ex.Message}. Recovering and proceeding.");
+                _internalLogger.Log(LogLevel.ERROR, $"Mutex was abandoned: {ex.Message}. Recovering and proceeding.");
                 _acquired = true;
             }
         }
@@ -39,7 +41,7 @@ namespace LoggerWithInternalLogger.Utils {
                 try {
                     _mutex.ReleaseMutex();
                 } catch (Exception ex) {
-                    Application.Log(LogLevel.ERROR, $"Failed to release mutex: {ex.Message}");
+                    _internalLogger.Log(LogLevel.ERROR, $"Failed to release mutex: {ex.Message}");
                 }
                 _acquired = false;
                 _disposed = true;

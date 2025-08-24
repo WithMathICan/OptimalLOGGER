@@ -3,7 +3,7 @@ using System.Text;
 using System.Threading;
 
 namespace LoggerWithInternalLogger.Utils {
-    internal class FileWriter(string filePath) : FileWriterBase(filePath) {
+    internal class FileWriter(string filePath, ILogger logger) : FileWriterBase(filePath, logger) {
 
         /// <summary>
         /// Writes the contents of the provided <see cref="StringBuilder"/> to the file in a thread-safe manner.
@@ -12,9 +12,9 @@ namespace LoggerWithInternalLogger.Utils {
         /// </summary>
         /// <param name="sb">The <see cref="StringBuilder"/> containing the text to write to the file.</param>
         public override void Write(StringBuilder sb) {
-            using var mutexLock = new MutexLock(_mutex, TimeSpan.FromSeconds(5));
+            using var mutexLock = new MutexLock(_mutex, TimeSpan.FromSeconds(5), _internalLogger);
             if (!mutexLock.IsAcquired) {
-                Application.Log(LogLevel.ERROR, $"Unable to acquire mutex to write to {FilePath}.");
+                InternalLog(LogLevel.ERROR, $"Unable to acquire mutex to write to {FilePath}.");
                 return;
             }
             try {
@@ -22,7 +22,7 @@ namespace LoggerWithInternalLogger.Utils {
                 using var streamWriter = new StreamWriter(stream, Encoding.UTF8);
                 streamWriter.Write(sb);
             } catch (Exception ex) {
-                Application.Log(LogLevel.ERROR, $"Logger failed: {ex}");
+               InternalLog(LogLevel.ERROR, $"Logger failed: {ex}");
             }
         }
 
@@ -33,15 +33,15 @@ namespace LoggerWithInternalLogger.Utils {
         /// </summary>
         /// <param name="text">The text to append as a new line to the file.</param>
         public override void AppendLine(string text) {
-            using var mutexLock = new MutexLock(_mutex, TimeSpan.FromSeconds(5));
+            using var mutexLock = new MutexLock(_mutex, TimeSpan.FromSeconds(5), _internalLogger);
             if (!mutexLock.IsAcquired) {
-                Application.Log(LogLevel.ERROR, $"Unable to acquire mutex to write to {FilePath}. Using fallback.");
+                InternalLog(LogLevel.ERROR, $"Unable to acquire mutex to write to {FilePath}. Using fallback.");
                 return;
             }
             try {
                 File.AppendAllText(FilePath, text + Environment.NewLine);
             } catch (Exception ex) {
-                Application.Log(LogLevel.ERROR, $"Unhandled error when saving log to file: {ex.Message}.");
+                InternalLog(LogLevel.ERROR, $"Unhandled error when saving log to file: {ex.Message}.");
             }
         }
     }

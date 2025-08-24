@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LoggerWithInternalLogger.Logger;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,13 +26,20 @@ namespace LoggerWithInternalLogger.Utils {
         /// </summary>
         protected virtual string FilePath => _filePath;
 
+        protected ILogger _internalLogger;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FileWriterBase"/> class.
         /// </summary>
         /// <param name="filePath">The file path to write to.</param>
-        public FileWriterBase(string filePath) {
+        public FileWriterBase(string filePath, ILogger logger) {
             _filePath = filePath;
             _mutex = new Mutex(false, $"Global\\{SanitizeMutexName(_filePath)}");
+            _internalLogger = logger;
+        }
+
+        protected void InternalLog(LogLevel level, string message) {
+            _internalLogger.Log(level, message);
         }
 
         /// <summary>

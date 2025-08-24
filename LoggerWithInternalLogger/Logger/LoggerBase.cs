@@ -30,6 +30,11 @@ namespace LoggerWithInternalLogger.Logger {
             return string.Concat(logLevel, "   ", date, "   ", message);
         }
 
+        /// <summary>
+        /// Appends a formatted log entry as a line to the specified <see cref="StringBuilder"/>.
+        /// </summary>
+        /// <param name="logEntry">The log entry to format and append.</param>
+        /// <param name="sb">The <see cref="StringBuilder"/> to append the formatted log entry to.</param>
         protected virtual void AppendFormattedLineToStringBuilder(LogEntry logEntry, StringBuilder sb) {
             sb.Append(LogLevelFactory.GetString(logEntry.Level))
                 .Append("  ")

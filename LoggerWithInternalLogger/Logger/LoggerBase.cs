@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Text;
 
 namespace LoggerWithInternalLogger.Logger {
     /// <summary>
@@ -27,6 +28,14 @@ namespace LoggerWithInternalLogger.Logger {
             string logLevel = LogLevelFactory.GetString(level);
             string date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
             return string.Concat(logLevel, "   ", date, "   ", message);
+        }
+
+        protected virtual void AppendFormattedLineToStringBuilder(LogEntry logEntry, StringBuilder sb) {
+            sb.Append(LogLevelFactory.GetString(logEntry.Level))
+                .Append("  ")
+                .AppendFormat("{0:yyyy-MM-dd HH:mm:ss}", logEntry.Date)
+                .Append("  ")
+                .AppendLine(logEntry.Message);
         }
     }
 }

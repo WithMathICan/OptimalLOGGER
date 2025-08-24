@@ -11,7 +11,7 @@ namespace LoggerWithInternalLogger.Logger {
         private readonly int _batchSize;
         private readonly AutoResetEvent _signal;
         private readonly Thread _worker;
-        private readonly ConcurrentQueue<string> _queue = new();
+        private readonly ConcurrentQueue<LogEntry> _queue = new();
         private readonly CancellationTokenSource _cts = new();
         private static readonly ThreadLocal<StringBuilder> _stringBuilder = new(() => new StringBuilder(256), trackAllValues: false);
 
@@ -46,8 +46,8 @@ namespace LoggerWithInternalLogger.Logger {
             var sb = _stringBuilder.Value ?? new StringBuilder(256);
             sb.Clear();
             int count = 0;
-            while (_queue.TryDequeue(out var log)) {
-                sb.AppendLine(log);
+            while (_queue.TryDequeue(out var logEntry)) {
+                AppendFormattedLineToStringBuilder(logEntry, sb);
                 count++;
                 if (count >= _batchSize) break;
             }
@@ -60,8 +60,7 @@ namespace LoggerWithInternalLogger.Logger {
         /// <param name="level">The log level.</param>
         /// <param name="message">The log message.</param>
         public override void Log(LogLevel level, string message) {
-            string logMessage = FormatMessage(level, message);
-            _queue.Enqueue(logMessage);
+            _queue.Enqueue(new LogEntry(level, DateTime.Now, message));
             if (_queue.Count > _batchSize) _signal.Set();
         }
 
